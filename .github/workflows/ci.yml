@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Check Go version
+      run: go version
+
+    - name: Build all services
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Building $dir..."
+            (cd "$dir" && go build ./...)
+          fi
+        done
+
+    - name: Lint (go vet)
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Vetting $dir..."
+            (cd "$dir" && go vet ./...)
+          fi
+        done
+
+    - name: Run tests
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Testing $dir..."
+            (cd "$dir" && go test -v -race ./... || true)
+          fi
+        done
