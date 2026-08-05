@@ -59,9 +59,19 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.12.2
+          sudo mv ./bin/golangci-lint /usr/local/bin/
+
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.12
-          only-new-issues: true
-          args: ./backend/...
+        run: |
+          for dir in backend/*/; do
+            if [ -f "$dir/go.mod" ]; then
+              echo "Linting $dir..."
+              cd "$dir"
+              golangci-lint run ./...
+              cd ../..
+            fi
+          done
+        shell: bash
