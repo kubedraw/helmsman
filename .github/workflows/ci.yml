@@ -45,3 +45,4 @@ jobs:
             (cd "$dir" && go vet ./...)
           fi
         done
+# Test: CI is alive
