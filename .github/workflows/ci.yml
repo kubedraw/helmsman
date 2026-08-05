@@ -64,14 +64,12 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.12.2
           sudo mv ./bin/golangci-lint /usr/local/bin/
 
-      - name: golangci-lint
+      - name: Run golangci-lint on each service
         run: |
           for dir in backend/*/; do
             if [ -f "$dir/go.mod" ]; then
-              echo "Linting $dir..."
-              cd "$dir"
-              golangci-lint run ./...
-              cd ../..
+            echo "🔍 Linting $dir..."
+            (cd "$dir" && golangci-lint run ./...)
             fi
           done
         shell: bash
