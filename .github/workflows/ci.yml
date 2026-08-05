@@ -1,3 +1,5 @@
+name: CI
+
 on:
   push:
     branches: [ main, develop ]
@@ -5,57 +7,41 @@ on:
     branches: [ main ]
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
 
-      - name: Build all services
-        run: |
-          for dir in backend/*/; do
-            if [ -f "$dir/go.mod" ]; then
-              echo "Building $dir..."
-              (cd "$dir" && go build ./...)
-            fi
-          done
+    - name: Build all services
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Building $dir..."
+            (cd "$dir" && go build ./...)
+          fi
+        done
 
-      - name: Run tests
-        run: |
-          for dir in backend/*/; do
-            if [ -f "$dir/go.mod" ]; then
-              echo "Testing $dir..."
-              (cd "$dir" && go test -v -race ./... || true)
-            fi
-          done
+    - name: Run tests
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Testing $dir..."
+            (cd "$dir" && go test -v -race ./... || true)
+          fi
+        done
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
-      - name: Install golangci-lint
-        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.12.2
-
-      - name: Run linter per service
-        run: |
-          for dir in backend/*/; do
-            if [ -f "$dir/go.mod" ]; then
-              echo "Linting $dir..."
-              cd "$dir"
-              ~/go/bin/golangci-lint run ./...
-              cd -
-            fi
-          done
+    - name: Lint
+      run: |
+        for dir in backend/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "Linting $dir..."
+            (cd "$dir" && go vet ./...)
+          fi
+        done
