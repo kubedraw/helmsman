@@ -67,4 +67,4 @@ jobs:
           # Показывать только новые проблемы в PR (для экономии времени)
           only-new-issues: true
           # Рабочая директория — корень проекта
-          working-directory: .
+          working-directory: backend/
