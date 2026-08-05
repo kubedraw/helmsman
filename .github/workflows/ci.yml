@@ -62,9 +62,6 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          # Используем последнюю стабильную версию v2
           version: v2.12
-          # Показывать только новые проблемы в PR (для экономии времени)
           only-new-issues: true
-          # Рабочая директория — корень проекта
-          working-directory: backend/
+          args: ./backend/...
