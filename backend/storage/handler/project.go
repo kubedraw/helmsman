@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kubedraw/helmsman/backend/storage/repository"
 	"github.com/kubedraw/helmsman/backend/shared/errors"
+	"github.com/kubedraw/helmsman/backend/shared/middleware"
 )
 
 type ProjectHandler struct {
@@ -25,6 +26,12 @@ type CreateProjectRequest struct {
 }
 
 func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		writeError(w, errors.NewUnauthorized("unauthorized"))
+		return
+	}
+
 	var req CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		slog.Error("Failed to decode request body", "error", err)
@@ -41,7 +48,7 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 		ID:          uuid.New().String(),
 		Name:        req.Name,
 		Description: req.Description,
-		UserID:      uuid.New().String(),
+		UserID:      userID,
 		Topology:    req.Topology,
 		Status:      "draft",
 	}
@@ -56,9 +63,10 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProjectHandler) List(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("user_id")
-	if userID == "" {
-		userID = "all"
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		writeError(w, errors.NewUnauthorized("unauthorized"))
+		return
 	}
 
 	projects, err := h.repo.List(userID)
@@ -84,7 +92,6 @@ func (h *ProjectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errors.NewInternal(err))
 		return
 	}
-
 	if project == nil {
 		writeError(w, errors.NewNotFound("project", id))
 		return
@@ -94,6 +101,12 @@ func (h *ProjectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		writeError(w, errors.NewUnauthorized("unauthorized"))
+		return
+	}
+
 	id := r.PathValue("id")
 	if id == "" {
 		writeError(w, errors.NewBadRequest("id is required"))
@@ -108,6 +121,10 @@ func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	if existing == nil {
 		writeError(w, errors.NewNotFound("project", id))
+		return
+	}
+	if existing.UserID != userID {
+		writeError(w, errors.NewUnauthorized("you are not the owner of this project"))
 		return
 	}
 
@@ -138,9 +155,30 @@ func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProjectHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		writeError(w, errors.NewUnauthorized("unauthorized"))
+		return
+	}
+
 	id := r.PathValue("id")
 	if id == "" {
 		writeError(w, errors.NewBadRequest("id is required"))
+		return
+	}
+
+	existing, err := h.repo.GetByID(id)
+	if err != nil {
+		slog.Error("Failed to get project", "error", err)
+		writeError(w, errors.NewInternal(err))
+		return
+	}
+	if existing == nil {
+		writeError(w, errors.NewNotFound("project", id))
+		return
+	}
+	if existing.UserID != userID {
+		writeError(w, errors.NewUnauthorized("you are not the owner of this project"))
 		return
 	}
 

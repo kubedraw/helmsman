@@ -48,20 +48,21 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Health
+	// Health — открытый
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// Проекты
-	mux.HandleFunc("POST /projects", projectHandler.Create)
-	mux.HandleFunc("GET /projects", projectHandler.List)
-	mux.HandleFunc("GET /projects/{id}", projectHandler.GetByID)
-	mux.HandleFunc("PUT /projects/{id}", projectHandler.Update)
-	mux.HandleFunc("DELETE /projects/{id}", projectHandler.Delete)
+	// Защищённые маршруты (с проверкой JWT)
+	authMiddleware := middleware.AuthMiddleware(cfg.JWTSecret)
+	mux.Handle("POST /projects", authMiddleware(http.HandlerFunc(projectHandler.Create)))
+	mux.Handle("GET /projects", authMiddleware(http.HandlerFunc(projectHandler.List)))
+	mux.Handle("GET /projects/{id}", authMiddleware(http.HandlerFunc(projectHandler.GetByID)))
+	mux.Handle("PUT /projects/{id}", authMiddleware(http.HandlerFunc(projectHandler.Update)))
+	mux.Handle("DELETE /projects/{id}", authMiddleware(http.HandlerFunc(projectHandler.Delete)))
 
-	// Middleware
+	// Middleware для всех запросов
 	handler := middleware.RequestIDMiddleware()(mux)
 	handler = middleware.LoggerMiddleware(log)(handler)
 	handler = middleware.CORSMiddleware()(handler)
