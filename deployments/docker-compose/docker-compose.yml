@@ -47,6 +47,7 @@ services:
       DB_USER: helmsman
       DB_PASSWORD: helmsman
       DB_NAME: helmsman
+      JWT_SECRET: secret
     depends_on:
       postgres:
         condition: service_healthy
