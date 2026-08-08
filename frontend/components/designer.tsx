@@ -31,6 +31,7 @@ import {
   type FlowNode,
   type K8sNodeData,
 } from "@/lib/cluster"
+import { generateFromTopology, toBackendTopology, validateTopologyRemote } from "@/lib/api"
 
 const nodeTypes: NodeTypes = { k8s: K8sNode }
 
@@ -178,19 +179,58 @@ function DesignerInner() {
     animateEdges(true)
 
     const computedSteps = generateCommands(nodes, edges)
-    pushLog("helmsman apply — initializing kubeadm provisioning plan", "muted")
-    pushLog(`${nodes.length} nodes · ${edges.length} links · ${computedSteps.length} steps`, "muted")
+    const topology = toBackendTopology(nodes, edges)
+
+    pushLog("helmsman apply — sending topology properties to backend", "muted")
+    pushLog(`${nodes.length} nodes · ${edges.length} links · ${computedSteps.length} local steps`, "muted")
     pushLog("")
 
     setAllStatus("queued")
-    await sleep(400)
+    await sleep(200)
+
+    try {
+      pushLog("▶ POST /api/validate", "warning")
+      const validation = await validateTopologyRemote(topology)
+      if (!validation.valid) {
+        for (const err of validation.errors) {
+          pushLog(`✗ ${err.field}: ${err.message}`, "error")
+        }
+        setAllStatus("error")
+        animateEdges(false)
+        setRunning(false)
+        return
+      }
+      pushLog("✓ topology valid", "success")
+      pushLog("")
+
+      pushLog("▶ POST /api/generate — forwarding node properties", "warning")
+      for (const n of topology.nodes) {
+        const props = Object.entries(n.properties ?? {})
+          .map(([k, v]) => `${k}=${v}`)
+          .join(" ")
+        pushLog(`  ${n.type}/${n.name}: ${props || "(no props)"}`, "muted")
+      }
+
+      const generated = await generateFromTopology(topology)
+      pushLog("✓ provisioner returned kubeadm config", "success")
+      pushLog("")
+      for (const line of generated.kubeadm_config.split("\n")) {
+        pushLog(line, "cmd")
+      }
+      pushLog("")
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      pushLog(`✗ backend unreachable or failed: ${message}`, "error")
+      pushLog("Falling back to local command simulation…", "muted")
+      pushLog("")
+    }
 
     for (const step of computedSteps) {
       setStatus(step.nodeId, "provisioning")
       pushLog(`▶ ${step.title}`, "warning")
       for (const cmd of step.commands) {
         pushLog(cmd.replace(/\n/g, " "), "cmd")
-        await sleep(220 + Math.random() * 260)
+        await sleep(180 + Math.random() * 180)
       }
       setStatus(step.nodeId, "ready")
       pushLog(`✓ ${step.title} — done`, "success")
@@ -198,7 +238,7 @@ function DesignerInner() {
     }
 
     animateEdges(false)
-    pushLog("Cluster bootstrap complete. Run `kubectl get nodes` to verify.", "success")
+    pushLog("Cluster bootstrap plan complete.", "success")
     setRunning(false)
   }, [nodes, edges, animateEdges, setAllStatus, setStatus])
 

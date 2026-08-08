@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import { Handle, Position, type NodeProps } from "@xyflow/react"
-import { CATALOG_BY_KIND, ACCENT_VAR } from "@/lib/catalog"
+import { CATALOG_BY_KIND, ACCENT_VAR, withAlpha } from "@/lib/catalog"
 import type { K8sNodeData } from "@/lib/cluster"
 import { Loader2, CheckCircle2, AlertCircle, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -29,7 +29,11 @@ function K8sNodeInner({ data, selected }: NodeProps & { data: K8sNodeData }) {
         "group relative w-[224px] rounded-xl border bg-card/95 backdrop-blur-sm transition-all",
         selected ? "border-primary shadow-[0_0_0_1px_var(--primary),0_12px_40px_oklch(0_0_0/0.5)]" : "border-border",
       )}
-      style={data.status === "provisioning" ? { boxShadow: `0 0 0 1px ${accent}, 0 0 24px ${accent}40` } : undefined}
+      style={
+        data.status === "provisioning"
+          ? { boxShadow: `0 0 0 1px ${accent}, 0 0 24px ${withAlpha(accent, 25)}` }
+          : undefined
+      }
     >
       <Handle type="target" position={Position.Left} className="!-left-1.5" />
       <Handle type="source" position={Position.Right} className="!-right-1.5" />
@@ -40,7 +44,7 @@ function K8sNodeInner({ data, selected }: NodeProps & { data: K8sNodeData }) {
       <div className="flex items-start gap-3 p-3 pl-4">
         <div
           className="flex size-9 shrink-0 items-center justify-center rounded-lg border"
-          style={{ background: `${accent}1a`, borderColor: `${accent}40`, color: accent }}
+          style={{ background: withAlpha(accent, 10), borderColor: withAlpha(accent, 25), color: accent }}
         >
           <Icon className="size-5" />
         </div>

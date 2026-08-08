@@ -299,4 +299,9 @@ export const ACCENT_VAR: Record<ComponentSpec["accent"], string> = {
   destructive: "var(--destructive)",
 }
 
+/** Tint a CSS color token (oklch / var) — hex alpha suffixes do not work with var()/oklch. */
+export function withAlpha(color: string, percent: number): string {
+  return `color-mix(in oklch, ${color} ${percent}%, transparent)`
+}
+
 export const PLATFORM_ICONS = { Boxes, Shield }

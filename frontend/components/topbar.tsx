@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import type { ValidationIssue } from "@/lib/cluster"
+import { withAlpha } from "@/lib/catalog"
 import {
   Hexagon,
   Play,
@@ -115,7 +116,7 @@ function ValidationPill({
         render={
           <span
             className="inline-flex cursor-default items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
-            style={{ borderColor: `${color}4d`, background: `${color}1a`, color }}
+            style={{ borderColor: withAlpha(color, 30), background: withAlpha(color, 10), color }}
           >
             <Icon className="size-3.5" />
             {count} {label}

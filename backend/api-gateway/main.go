@@ -63,19 +63,19 @@ func main() {
 		storageProxy.ServeHTTP(w, r)
 	})))
 
-	mux.Handle("/validate", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// Validate / generate — open so the designer can pass node properties without auth
+	mux.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Proxying topology request", "method", r.Method, "path", r.URL.Path)
 		topologyProxy.ServeHTTP(w, r)
-	})))
-	mux.Handle("/analyze", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	})
+	mux.HandleFunc("/analyze", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Proxying topology request", "method", r.Method, "path", r.URL.Path)
 		topologyProxy.ServeHTTP(w, r)
-	})))
-
-	mux.Handle("/generate", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	})
+	mux.HandleFunc("/generate", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Proxying provisioner request", "method", r.Method, "path", r.URL.Path)
 		provisionerProxy.ServeHTTP(w, r)
-	})))
+	})
 
 	mux.Handle("/apply", authMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Proxying executor request", "method", r.Method, "path", r.URL.Path)

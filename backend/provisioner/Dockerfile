@@ -1,9 +1,9 @@
-FROM golang:1.26-alpine AS builder
+FROM golang:1.22-alpine AS builder
 WORKDIR /app
 COPY backend/provisioner/go.mod ./
 COPY backend/shared ../shared
 COPY backend/topology ../topology
-RUN go mod download
+RUN go mod tidy
 COPY backend/provisioner/ .
 RUN go build -o provisioner .
 

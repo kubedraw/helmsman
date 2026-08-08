@@ -1,8 +1,8 @@
-FROM golang:1.26-alpine AS builder
+FROM golang:1.22-alpine AS builder
 WORKDIR /app
 COPY backend/storage/go.mod ./
 COPY backend/shared ../shared
-RUN go mod download
+RUN go mod tidy
 COPY backend/storage/ .
 RUN go build -o storage .
 

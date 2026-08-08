@@ -1,0 +1,9 @@
+{
+  "name": "helmsman",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --dir frontend dev",
+    "backend:up": "pnpm --dir frontend backend:up",
+    "backend:down": "pnpm --dir frontend backend:down"
+  }
+}

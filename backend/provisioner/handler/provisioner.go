@@ -33,10 +33,6 @@ func (h *ProvisionerHandler) Generate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.KubernetesVersion == "" {
-		req.KubernetesVersion = "v1.28.0"
-	}
-
 	kubeadmConfig, err := generator.GenerateKubeadmConfig(&req.Topology, req.KubernetesVersion)
 	if err != nil {
 		writeError(w, errors.NewBadRequest(err.Error()))

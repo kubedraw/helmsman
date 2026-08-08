@@ -1,6 +1,13 @@
 "use client"
 
-import { COMPONENT_CATALOG, CATEGORY_LABELS, ACCENT_VAR, type NodeCategory, type ComponentSpec } from "@/lib/catalog"
+import {
+  COMPONENT_CATALOG,
+  CATEGORY_LABELS,
+  ACCENT_VAR,
+  withAlpha,
+  type NodeCategory,
+  type ComponentSpec,
+} from "@/lib/catalog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Boxes } from "lucide-react"
 
@@ -43,7 +50,7 @@ export function Palette({ onAdd }: { onAdd: (spec: ComponentSpec) => void }) {
                     >
                       <div
                         className="flex size-8 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-105"
-                        style={{ background: `${accent}1a`, borderColor: `${accent}40`, color: accent }}
+                        style={{ background: withAlpha(accent, 10), borderColor: withAlpha(accent, 25), color: accent }}
                       >
                         <Icon className="size-4" />
                       </div>

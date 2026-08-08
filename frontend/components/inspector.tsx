@@ -1,6 +1,6 @@
 "use client"
 
-import { CATALOG_BY_KIND, ACCENT_VAR } from "@/lib/catalog"
+import { CATALOG_BY_KIND, ACCENT_VAR, withAlpha } from "@/lib/catalog"
 import type { FlowNode } from "@/lib/cluster"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
@@ -63,7 +63,7 @@ function InspectorBody({ node, onChange, onRename, onDelete }: { node: FlowNode 
       <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
         <div
           className="flex size-10 shrink-0 items-center justify-center rounded-lg border"
-          style={{ background: `${accent}1a`, borderColor: `${accent}40`, color: accent }}
+          style={{ background: withAlpha(accent, 10), borderColor: withAlpha(accent, 25), color: accent }}
         >
           <Icon className="size-5" />
         </div>
